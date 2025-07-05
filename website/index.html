@@ -10,8 +10,43 @@
     <div class="container">
         <div id="initialView">
             <h1>Mock Exam Taker</h1>
-            <p>Select a mock exam file (.md) to begin.</p>
-            <input type="file" id="examFile" accept=".md">
+            <p>Select a mock exam to begin.</p>
+            
+            <!-- Option 1: Select from generated exams -->
+            <div id="generatedExamSection">
+                <h3>Choose from Generated Exams:</h3>
+                <select id="generatedExamSelect">
+                    <option value="">-- Select a Generated Exam --</option>
+                    <option value="anthropology_exam.md">Anthropology</option>
+                    <option value="art_history_exam.md">Art History</option>
+                    <option value="astronomy_exam.md">Astronomy</option>
+                    <option value="chemistry_exam.md">Chemistry</option>
+                    <option value="computer_science_exam.md">Computer Science</option>
+                    <option value="economics_exam.md">Economics</option>
+                    <option value="environmental_science_exam.md">Environmental Science</option>
+                    <option value="geography_exam.md">Geography</option>
+                    <option value="history_exam.md">History</option>
+                    <option value="linguistics_exam.md">Linguistics</option>
+                    <option value="literature_exam.md">Literature</option>
+                    <option value="music_theory_exam.md">Music Theory</option>
+                    <option value="philosophy_exam.md">Philosophy</option>
+                    <option value="physics_exam.md">Physics</option>
+                    <option value="psychology_exam.md">Psychology</option>
+                    <option value="sociology_exam.md">Sociology</option>
+                </select>
+                <button id="loadGeneratedExam">Load Selected Exam</button>
+            </div>
+            
+            <!-- Divider -->
+            <div id="divider">
+                <p>OR</p>
+            </div>
+            
+            <!-- Option 2: Upload your own file -->
+            <div id="uploadSection">
+                <h3>Upload Your Own Exam:</h3>
+                <input type="file" id="examFile" accept=".md">
+            </div>
         </div>
 
         <div id="examArea" class="hidden">
