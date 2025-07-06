@@ -21,11 +21,18 @@ const customizeModal = document.getElementById('customizeModal');
 const closeModal = document.getElementById('closeModal');
 const accentColor = document.getElementById('accentColor');
 const backgroundHue = document.getElementById('backgroundHue');
+const animationColor = document.getElementById('animationColor');
 const accentPreview = document.getElementById('accentPreview');
 const backgroundPreview = document.getElementById('backgroundPreview');
+const animationPreview = document.getElementById('animationPreview');
 const resetColors = document.getElementById('resetColors');
 const applyColors = document.getElementById('applyColors');
 const presetBtns = document.querySelectorAll('.preset-btn');
+
+let questions = [];
+let answers = [];
+let currentQuestionIndex = 0;
+let score = 0;
 
 // Template text for clipboard
 const TEMPLATE_TEXT = `### Prompt for Generating Compatible Mock Exams
@@ -122,11 +129,7 @@ The entire output must be a single block of Markdown text. Please ensure the fin
 - Each section should have exactly 5 questions
 - Total of 15 questions per exam`;
 
-// Event listeners for existing functionality
-let questions = [];
-let answers = [];
-let currentQuestionIndex = 0;
-let score = 0;
+// === EVENT LISTENERS ===
 
 // Event listener for file upload
 examFile.addEventListener('change', (event) => {
@@ -213,21 +216,16 @@ function parseMarkdown(content) {
                 questions.push(currentQuestion);
             }
             currentQuestion = {
-                text: trimmedLine,
+                question: trimmedLine.replace(/^\d+\.\s/, ''),
                 options: []
             };
         } else if (trimmedLine.match(/^[a-d]\)\s/)) { // It's an option
             if (currentQuestion) {
                 currentQuestion.options.push(trimmedLine);
             }
-        } else if (trimmedLine.match(/^##\s/)) { // It's a section header
-            // Skip section headers
-        } else if (trimmedLine.match(/^#\s/)) { // It's the title
-            // Skip title
-        } else if (trimmedLine.length > 0) { // It's part of the question text
-            if (currentQuestion) {
-                currentQuestion.text += ' ' + trimmedLine;
-            }
+        } else if (trimmedLine && currentQuestion && !currentQuestion.options.length) {
+            // Continuation of question text
+            currentQuestion.question += ' ' + trimmedLine;
         }
     }
 
@@ -238,22 +236,21 @@ function parseMarkdown(content) {
     // Parse answers
     const answers = [];
     const answerLines = answersText.split('\n');
-    
+
     for (const line of answerLines) {
         const trimmedLine = line.trim();
-        if (trimmedLine.match(/^\d+\.\s/)) { // It's an answer
+        if (trimmedLine.match(/^\d+\.\s/)) {
             const parts = trimmedLine.split('||');
             if (parts.length >= 2) {
                 const answerPart = parts[0].trim();
                 const explanationPart = parts[1].trim();
                 
-                // Extract the correct option (a, b, c, or d)
-                const optionMatch = answerPart.match(/^\d+\.\s+([a-d])\)/);
-                if (optionMatch) {
-                    const correctOption = optionMatch[1];
+                const answerMatch = answerPart.match(/^\d+\.\s*([a-d])\)\s*(.*)$/);
+                if (answerMatch) {
                     answers.push({
-                        correct: correctOption,
-                        explanation: explanationPart
+                        option: answerMatch[1],
+                        text: answerMatch[2],
+                        explanation: explanationPart.replace(/^\*\*Explanation:\*\*\s*/, '')
                     });
                 }
             }
@@ -264,225 +261,367 @@ function parseMarkdown(content) {
 }
 
 function displayCurrentQuestion() {
-    if (currentQuestionIndex >= questions.length) {
-        showResults();
-        return;
-    }
-
     const question = questions[currentQuestionIndex];
-    const progressPercentage = ((currentQuestionIndex + 1) / questions.length) * 100;
-    progressBar.style.width = progressPercentage + '%';
-
+    
     questionContainer.innerHTML = `
-        <div class="question">
-            <strong>Question ${currentQuestionIndex + 1}:</strong> ${question.text}
-            <div class="options">
-                ${question.options.map(option => `
-                    <label>
-                        <input type="radio" name="answer" value="${option.charAt(0)}">
-                        <span>${option}</span>
-                    </label>
-                `).join('')}
-            </div>
-        </div>
+        <h2>Question ${currentQuestionIndex + 1} of ${questions.length}</h2>
+        <p>${question.question}</p>
     `;
 
     answerContainer.innerHTML = '';
-    answerContainer.classList.remove('correct', 'incorrect');
+    question.options.forEach((option, index) => {
+        const optionElement = document.createElement('div');
+        optionElement.className = 'answer-option';
+        optionElement.innerHTML = `
+            <input type="radio" name="answer" value="${String.fromCharCode(97 + index)}" id="option${index}">
+            <label for="option${index}">${option}</label>
+        `;
+        answerContainer.appendChild(optionElement);
+    });
+
     checkBtn.classList.remove('hidden');
     nextBtn.classList.add('hidden');
+    
+    // Update progress bar
+    const progressPercentage = ((currentQuestionIndex + 1) / questions.length) * 100;
+    progressBar.style.width = `${progressPercentage}%`;
 }
 
 checkBtn.addEventListener('click', () => {
     const selectedAnswer = document.querySelector('input[name="answer"]:checked');
     if (!selectedAnswer) {
-        alert('Please select an answer.');
+        alert('Please select an answer');
         return;
     }
 
     const userAnswer = selectedAnswer.value;
-    const correctAnswer = answers[currentQuestionIndex].correct;
-    const explanation = answers[currentQuestionIndex].explanation;
-
-    if (userAnswer === correctAnswer) {
+    const correctAnswer = answers[currentQuestionIndex];
+    
+    const isCorrect = userAnswer === correctAnswer.option;
+    
+    if (isCorrect) {
         score++;
-        answerContainer.innerHTML = `
-            <p><strong>Correct!</strong></p>
-            <p>${explanation}</p>
-        `;
-        answerContainer.classList.add('correct');
-    } else {
-        answerContainer.innerHTML = `
-            <p><strong>Incorrect.</strong></p>
-            <p>The correct answer is: ${correctAnswer})</p>
-            <p>${explanation}</p>
-        `;
-        answerContainer.classList.add('incorrect');
     }
 
+    // Show feedback
+    showFeedback(isCorrect, correctAnswer);
+    
     checkBtn.classList.add('hidden');
     nextBtn.classList.remove('hidden');
 });
 
 nextBtn.addEventListener('click', () => {
     currentQuestionIndex++;
-    displayCurrentQuestion();
+    
+    if (currentQuestionIndex < questions.length) {
+        displayCurrentQuestion();
+    } else {
+        showResults();
+    }
 });
+
+function showFeedback(isCorrect, correctAnswer) {
+    const feedback = document.createElement('div');
+    feedback.className = 'feedback';
+    feedback.innerHTML = `
+        <h3>${isCorrect ? 'Correct!' : 'Incorrect'}</h3>
+        <p><strong>Correct Answer:</strong> ${correctAnswer.option}) ${correctAnswer.text}</p>
+        <p><strong>Explanation:</strong> ${correctAnswer.explanation}</p>
+    `;
+    
+    answerContainer.appendChild(feedback);
+    
+    // Disable all radio buttons
+    document.querySelectorAll('input[name="answer"]').forEach(input => {
+        input.disabled = true;
+    });
+    
+    // Highlight correct answer
+    const correctOptionInput = document.querySelector(`input[name="answer"][value="${correctAnswer.option}"]`);
+    if (correctOptionInput) {
+        correctOptionInput.parentElement.classList.add('correct');
+    }
+}
 
 function showResults() {
     examArea.classList.add('hidden');
     resultsArea.classList.remove('hidden');
+    
     const percentage = Math.round((score / questions.length) * 100);
     scoreEl.textContent = `${score}/${questions.length} (${percentage}%)`;
 }
 
 restartBtn.addEventListener('click', () => {
+    // Reset everything
     resultsArea.classList.add('hidden');
     initialView.classList.remove('hidden');
+    
+    // Reset form
+    generatedExamSelect.value = '';
+    examFile.value = '';
+    
+    // Reset variables
     questions = [];
     answers = [];
     currentQuestionIndex = 0;
     score = 0;
-    progressBar.style.width = '0%';
-    examFile.value = '';
-    generatedExamSelect.value = '';
 });
 
-// === NEW FUNCTIONALITY ===
+// === CUSTOMIZATION FUNCTIONALITY ===
 
-// Clipboard Copy Functionality
-copyTemplateBtn.addEventListener('click', async () => {
-    try {
-        await navigator.clipboard.writeText(TEMPLATE_TEXT);
-        
-        // Visual feedback
-        const originalText = copyTemplateBtn.textContent;
-        copyTemplateBtn.textContent = '✅ Copied!';
-        copyTemplateBtn.style.background = 'linear-gradient(45deg, #004400, #008800)';
-        
-        setTimeout(() => {
-            copyTemplateBtn.textContent = originalText;
-            copyTemplateBtn.style.background = 'linear-gradient(45deg, #004400, #006600)';
-        }, 2000);
-        
-    } catch (err) {
-        // Fallback for older browsers
-        const textArea = document.createElement('textarea');
-        textArea.value = TEMPLATE_TEXT;
-        textArea.style.position = 'fixed';
-        textArea.style.left = '-999999px';
-        textArea.style.top = '-999999px';
-        document.body.appendChild(textArea);
-        textArea.focus();
-        textArea.select();
-        
-        try {
-            document.execCommand('copy');
-            copyTemplateBtn.textContent = '✅ Copied!';
-            setTimeout(() => {
-                copyTemplateBtn.textContent = '📋 Copy Template to Clipboard';
-            }, 2000);
-        } catch (err) {
-            alert('Could not copy to clipboard. Please manually copy the template text.');
-        }
-        
-        document.body.removeChild(textArea);
-    }
-});
-
-// Customization Modal Functionality
-customizeBtn.addEventListener('click', () => {
-    customizeModal.classList.remove('hidden');
-    updateColorPreviews();
-});
-
-closeModal.addEventListener('click', () => {
-    customizeModal.classList.add('hidden');
-});
-
-// Close modal when clicking outside
-customizeModal.addEventListener('click', (e) => {
-    if (e.target === customizeModal) {
+// Initialize customization functionality when DOM is ready
+function initializeCustomization() {
+    // Make sure modal starts hidden
+    if (customizeModal) {
         customizeModal.classList.add('hidden');
     }
-});
-
-// Color customization functions
-function updateColorPreviews() {
-    const accentValue = accentColor.value;
-    const hueValue = backgroundHue.value;
     
-    accentPreview.style.backgroundColor = accentValue;
-    backgroundPreview.style.backgroundColor = `hsl(${hueValue}, 50%, 15%)`;
-}
-
-accentColor.addEventListener('input', updateColorPreviews);
-backgroundHue.addEventListener('input', updateColorPreviews);
-
-// Preset color buttons
-presetBtns.forEach(btn => {
-    btn.addEventListener('click', () => {
-        const color = btn.dataset.color;
-        const hue = btn.dataset.hue;
-        
-        accentColor.value = color;
-        backgroundHue.value = hue;
-        updateColorPreviews();
+    // Clipboard Copy Functionality
+    if (copyTemplateBtn) {
+        copyTemplateBtn.addEventListener('click', async () => {
+            try {
+                await navigator.clipboard.writeText(TEMPLATE_TEXT);
+                
+                // Visual feedback
+                const originalText = copyTemplateBtn.textContent;
+                copyTemplateBtn.textContent = '✅ Copied!';
+                copyTemplateBtn.style.background = 'linear-gradient(45deg, #004400, #008800)';
+                
+                setTimeout(() => {
+                    copyTemplateBtn.textContent = originalText;
+                    copyTemplateBtn.style.background = 'linear-gradient(45deg, #004400, #006600)';
+                }, 2000);
+                
+            } catch (err) {
+                // Fallback for older browsers
+                const textArea = document.createElement('textarea');
+                textArea.value = TEMPLATE_TEXT;
+                textArea.style.position = 'fixed';
+                textArea.style.left = '-999999px';
+                textArea.style.top = '-999999px';
+                document.body.appendChild(textArea);
+                textArea.focus();
+                textArea.select();
+                
+                try {
+                    document.execCommand('copy');
+                    copyTemplateBtn.textContent = '✅ Copied!';
+                    setTimeout(() => {
+                        copyTemplateBtn.textContent = '📋 Copy Template to Clipboard';
+                    }, 2000);
+                } catch (err) {
+                    alert('Could not copy to clipboard. Please manually copy the template text.');
+                }
+                
+                document.body.removeChild(textArea);
+            }
+        });
+    }
+    
+    // Customization Modal Functionality
+    if (customizeBtn) {
+        customizeBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            if (customizeModal) {
+                customizeModal.classList.remove('hidden');
+                updateColorPreviews();
+            }
+        });
+    }
+    
+    if (closeModal) {
+        closeModal.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            if (customizeModal) {
+                customizeModal.classList.add('hidden');
+            }
+        });
+    }
+    
+    // Close modal when clicking outside
+    if (customizeModal) {
+        customizeModal.addEventListener('click', (e) => {
+            if (e.target === customizeModal) {
+                customizeModal.classList.add('hidden');
+            }
+        });
+    }
+    
+    // Color customization functions
+    function updateColorPreviews() {
+        if (accentColor && accentPreview) {
+            accentPreview.style.backgroundColor = accentColor.value;
+        }
+        if (backgroundHue && backgroundPreview) {
+            backgroundPreview.style.backgroundColor = `hsl(${backgroundHue.value}, 50%, 15%)`;
+        }
+        if (animationColor && animationPreview) {
+            animationPreview.style.backgroundColor = animationColor.value;
+        }
+    }
+    
+    if (accentColor) {
+        accentColor.addEventListener('input', updateColorPreviews);
+    }
+    if (backgroundHue) {
+        backgroundHue.addEventListener('input', updateColorPreviews);
+    }
+    if (animationColor) {
+        animationColor.addEventListener('input', updateColorPreviews);
+    }
+    
+    // Preset color buttons
+    presetBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const accent = btn.dataset.accent;
+            const hue = btn.dataset.hue;
+            const animation = btn.dataset.animation;
+            
+            if (accent && accentColor) accentColor.value = accent;
+            if (hue && backgroundHue) backgroundHue.value = hue;
+            if (animation && animationColor) animationColor.value = animation;
+            
+            updateColorPreviews();
+        });
     });
-});
-
-// Apply color changes
-applyColors.addEventListener('click', () => {
-    const newAccentColor = accentColor.value;
-    const newBackgroundHue = backgroundHue.value;
     
-    // Update CSS custom properties
-    document.documentElement.style.setProperty('--matrix-green', newAccentColor);
-    document.documentElement.style.setProperty('--background-hue', newBackgroundHue);
+    // Apply color changes
+    if (applyColors) {
+        applyColors.addEventListener('click', () => {
+            const newAccentColor = accentColor ? accentColor.value : '#00ff00';
+            const newBackgroundHue = backgroundHue ? backgroundHue.value : '120';
+            const newAnimationColor = animationColor ? animationColor.value : '#00ff00';
+            
+            // Update CSS custom properties
+            document.documentElement.style.setProperty('--matrix-green', newAccentColor);
+            document.documentElement.style.setProperty('--background-hue', newBackgroundHue);
+            document.documentElement.style.setProperty('--animation-color', newAnimationColor);
+            
+            // Update the matrix rain animation
+            updateMatrixAnimation(newAnimationColor);
+            
+            // Save to localStorage
+            localStorage.setItem('matrixAccentColor', newAccentColor);
+            localStorage.setItem('matrixBackgroundHue', newBackgroundHue);
+            localStorage.setItem('matrixAnimationColor', newAnimationColor);
+            
+            // Close modal
+            if (customizeModal) {
+                customizeModal.classList.add('hidden');
+            }
+            
+            // Show success message
+            showNotification('🎨 Colors updated successfully!');
+        });
+    }
     
-    // Save to localStorage
-    localStorage.setItem('matrixAccentColor', newAccentColor);
-    localStorage.setItem('matrixBackgroundHue', newBackgroundHue);
+    // Reset to default colors
+    if (resetColors) {
+        resetColors.addEventListener('click', () => {
+            document.documentElement.style.setProperty('--matrix-green', '#00ff00');
+            document.documentElement.style.setProperty('--background-hue', '120');
+            document.documentElement.style.setProperty('--animation-color', '#00ff00');
+            
+            if (accentColor) accentColor.value = '#00ff00';
+            if (backgroundHue) backgroundHue.value = '120';
+            if (animationColor) animationColor.value = '#00ff00';
+            
+            updateColorPreviews();
+            updateMatrixAnimation('#00ff00');
+            
+            // Clear localStorage
+            localStorage.removeItem('matrixAccentColor');
+            localStorage.removeItem('matrixBackgroundHue');
+            localStorage.removeItem('matrixAnimationColor');
+            
+            showNotification('🔄 Colors reset to default!');
+        });
+    }
     
-    // Close modal
-    customizeModal.classList.add('hidden');
-    
-    // Show success message
-    showNotification('🎨 Colors updated successfully!');
-});
-
-// Reset to default colors
-resetColors.addEventListener('click', () => {
-    document.documentElement.style.setProperty('--matrix-green', '#00ff00');
-    document.documentElement.style.setProperty('--background-hue', '120');
-    
-    accentColor.value = '#00ff00';
-    backgroundHue.value = '120';
-    updateColorPreviews();
-    
-    // Clear localStorage
-    localStorage.removeItem('matrixAccentColor');
-    localStorage.removeItem('matrixBackgroundHue');
-    
-    showNotification('🔄 Colors reset to default!');
-});
+    // Load saved colors
+    loadSavedColors();
+}
 
 // Load saved colors on page load
 function loadSavedColors() {
     const savedAccentColor = localStorage.getItem('matrixAccentColor');
     const savedBackgroundHue = localStorage.getItem('matrixBackgroundHue');
+    const savedAnimationColor = localStorage.getItem('matrixAnimationColor');
     
     if (savedAccentColor) {
         document.documentElement.style.setProperty('--matrix-green', savedAccentColor);
-        accentColor.value = savedAccentColor;
+        if (accentColor) accentColor.value = savedAccentColor;
     }
     
     if (savedBackgroundHue) {
         document.documentElement.style.setProperty('--background-hue', savedBackgroundHue);
-        backgroundHue.value = savedBackgroundHue;
+        if (backgroundHue) backgroundHue.value = savedBackgroundHue;
     }
     
-    updateColorPreviews();
+    if (savedAnimationColor) {
+        document.documentElement.style.setProperty('--animation-color', savedAnimationColor);
+        if (animationColor) animationColor.value = savedAnimationColor;
+        updateMatrixAnimation(savedAnimationColor);
+    }
+}
+
+// Update matrix rain animation color
+function updateMatrixAnimation(color) {
+    // Remove existing animation styles
+    const existingStyle = document.getElementById('matrix-animation-style');
+    if (existingStyle) {
+        existingStyle.remove();
+    }
+    
+    // Create new animation style with the selected color
+    const style = document.createElement('style');
+    style.id = 'matrix-animation-style';
+    style.textContent = `
+        body::before {
+            background: linear-gradient(90deg, transparent, ${color}, transparent);
+        }
+        
+        @keyframes matrix-rain {
+            0% { 
+                transform: translateY(-100vh) translateX(0);
+                opacity: 0;
+            }
+            10% { 
+                opacity: 1;
+            }
+            90% { 
+                opacity: 1;
+            }
+            100% { 
+                transform: translateY(100vh) translateX(50px);
+                opacity: 0;
+            }
+        }
+        
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+            background: 
+                radial-gradient(circle at 20% 20%, ${color}22 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, ${color}22 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, ${color}11 0%, transparent 50%);
+            animation: matrix-glow 4s ease-in-out infinite alternate;
+        }
+        
+        @keyframes matrix-glow {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 0.7; }
+        }
+    `;
+    document.head.appendChild(style);
 }
 
 // Show notification function
@@ -517,8 +656,8 @@ function showNotification(message) {
 }
 
 // Add CSS animations for notifications
-const style = document.createElement('style');
-style.textContent = `
+const notificationStyle = document.createElement('style');
+notificationStyle.textContent = `
     @keyframes slideIn {
         from {
             transform: translateX(100%);
@@ -541,7 +680,7 @@ style.textContent = `
         }
     }
 `;
-document.head.appendChild(style);
+document.head.appendChild(notificationStyle);
 
-// Initialize colors when page loads
-document.addEventListener('DOMContentLoaded', loadSavedColors);
+// Initialize when DOM is ready
+document.addEventListener('DOMContentLoaded', initializeCustomization);

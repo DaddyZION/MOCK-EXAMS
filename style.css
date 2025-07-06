@@ -26,40 +26,61 @@ body::before {
     left: 0;
     width: 100%;
     height: 100%;
-    background: 
-        radial-gradient(circle at 20% 50%, rgba(0, 255, 65, 0.1) 0%, transparent 50%),
-        radial-gradient(circle at 80% 20%, rgba(0, 255, 65, 0.15) 0%, transparent 50%),
-        radial-gradient(circle at 40% 80%, rgba(0, 255, 65, 0.1) 0%, transparent 50%);
-    animation: matrix-glow 8s ease-in-out infinite alternate;
+    pointer-events: none;
     z-index: -2;
+    background: 
+        repeating-linear-gradient(
+            0deg,
+            transparent,
+            transparent 98px,
+            var(--animation-color) 100px
+        ),
+        repeating-linear-gradient(
+            90deg,
+            transparent,
+            transparent 98px,
+            var(--animation-color) 100px
+        );
+    opacity: 0.1;
+    animation: matrix-scan 3s linear infinite;
 }
 
+@keyframes matrix-scan {
+    0% {
+        transform: translateY(-100vh);
+    }
+    100% {
+        transform: translateY(100vh);
+    }
+}
+
+/* Matrix Glow Effect */
 body::after {
-    content: '01001010 11001100 10101010 01010101 11110000 00001111 10011001 01100110 11000011 00110011 10100101 01011010';
+    content: '';
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    font-family: 'Fira Code', monospace;
-    font-size: 12px;
-    color: rgba(0, 255, 65, 0.08);
-    word-spacing: 20px;
-    line-height: 30px;
-    animation: matrix-rain 15s linear infinite;
+    pointer-events: none;
     z-index: -1;
-    overflow: hidden;
-    white-space: pre-wrap;
-}
-
-@keyframes matrix-rain {
-    0% { transform: translateY(-100%); }
-    100% { transform: translateY(100vh); }
+    background: 
+        radial-gradient(circle at 20% 20%, var(--animation-color) 0%, transparent 50%),
+        radial-gradient(circle at 80% 80%, var(--animation-color) 0%, transparent 50%),
+        radial-gradient(circle at 40% 40%, var(--animation-color) 0%, transparent 50%);
+    opacity: 0.1;
+    animation: matrix-glow 4s ease-in-out infinite alternate;
 }
 
 @keyframes matrix-glow {
-    0% { opacity: 0.5; }
-    100% { opacity: 1; }
+    0%, 100% { 
+        opacity: 0.05; 
+        transform: scale(1);
+    }
+    50% { 
+        opacity: 0.15; 
+        transform: scale(1.1);
+    }
 }
 
 .container {
@@ -719,6 +740,7 @@ select option {
     --matrix-medium: #003300;
     --matrix-light: #ffffff;
     --background-hue: 120;
+    --animation-color: #00ff00;
 }
 
 /* Update existing colors to use custom properties */

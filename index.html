@@ -110,14 +110,19 @@
                     <input type="range" id="backgroundHue" min="0" max="360" value="120">
                     <span class="color-preview" id="backgroundPreview"></span>
                 </div>
+                <div class="color-option">
+                    <label for="animationColor">Animation Color:</label>
+                    <input type="color" id="animationColor" value="#00ff00">
+                    <span class="color-preview" id="animationPreview"></span>
+                </div>
                 <div class="preset-colors">
                     <h4>Quick Presets:</h4>
-                    <button class="preset-btn" data-color="#00ff00" data-hue="120">🟢 Matrix Green</button>
-                    <button class="preset-btn" data-color="#00ffff" data-hue="180">🔵 Cyan</button>
-                    <button class="preset-btn" data-color="#ff0080" data-hue="320">🟣 Magenta</button>
-                    <button class="preset-btn" data-color="#ffff00" data-hue="60">🟡 Yellow</button>
-                    <button class="preset-btn" data-color="#ff8000" data-hue="30">🟠 Orange</button>
-                    <button class="preset-btn" data-color="#ff0000" data-hue="0">🔴 Red</button>
+                    <button class="preset-btn" data-accent="#00ff00" data-hue="120" data-animation="#00ff00">🟢 Matrix Green</button>
+                    <button class="preset-btn" data-accent="#00ffff" data-hue="180" data-animation="#00ffff">🔵 Cyan</button>
+                    <button class="preset-btn" data-accent="#ff0080" data-hue="320" data-animation="#ff0080">🟣 Magenta</button>
+                    <button class="preset-btn" data-accent="#ffff00" data-hue="60" data-animation="#ffff00">🟡 Yellow</button>
+                    <button class="preset-btn" data-accent="#ff8000" data-hue="30" data-animation="#ff8000">🟠 Orange</button>
+                    <button class="preset-btn" data-accent="#ff0000" data-hue="0" data-animation="#ff0000">🔴 Red</button>
                 </div>
             </div>
             <div class="modal-footer">
