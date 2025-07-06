@@ -371,9 +371,13 @@ restartBtn.addEventListener('click', () => {
 
 // Initialize customization functionality when DOM is ready
 function initializeCustomization() {
-    // Make sure modal starts hidden
-    if (customizeModal) {
-        customizeModal.classList.add('hidden');
+    // CRITICAL: Make sure modal starts hidden
+    const modal = document.getElementById('customizeModal');
+    if (modal) {
+        modal.classList.add('hidden');
+        modal.style.display = 'none';
+        modal.style.opacity = '0';
+        modal.style.visibility = 'hidden';
     }
     
     // Clipboard Copy Functionality
@@ -423,8 +427,10 @@ function initializeCustomization() {
         customizeBtn.addEventListener('click', (e) => {
             e.preventDefault();
             e.stopPropagation();
-            if (customizeModal) {
-                customizeModal.classList.remove('hidden');
+            console.log('Customize button clicked'); // Debug log
+            if (modal) {
+                modal.classList.remove('hidden');
+                modal.classList.add('show');
                 updateColorPreviews();
             }
         });
@@ -434,17 +440,20 @@ function initializeCustomization() {
         closeModal.addEventListener('click', (e) => {
             e.preventDefault();
             e.stopPropagation();
-            if (customizeModal) {
-                customizeModal.classList.add('hidden');
+            console.log('Close button clicked'); // Debug log
+            if (modal) {
+                modal.classList.add('hidden');
+                modal.classList.remove('show');
             }
         });
     }
     
     // Close modal when clicking outside
-    if (customizeModal) {
-        customizeModal.addEventListener('click', (e) => {
-            if (e.target === customizeModal) {
-                customizeModal.classList.add('hidden');
+    if (modal) {
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.classList.add('hidden');
+                modal.classList.remove('show');
             }
         });
     }
@@ -507,9 +516,10 @@ function initializeCustomization() {
             localStorage.setItem('matrixBackgroundHue', newBackgroundHue);
             localStorage.setItem('matrixAnimationColor', newAnimationColor);
             
-            // Close modal
-            if (customizeModal) {
-                customizeModal.classList.add('hidden');
+            // Close modal properly
+            if (modal) {
+                modal.classList.add('hidden');
+                modal.classList.remove('show');
             }
             
             // Show success message
@@ -683,4 +693,14 @@ notificationStyle.textContent = `
 document.head.appendChild(notificationStyle);
 
 // Initialize when DOM is ready
-document.addEventListener('DOMContentLoaded', initializeCustomization);
+document.addEventListener('DOMContentLoaded', function() {
+    // FIRST: Ensure modal is hidden immediately
+    const modal = document.getElementById('customizeModal');
+    if (modal) {
+        modal.classList.add('hidden');
+        modal.style.display = 'none'; // Force hide with CSS too
+    }
+    
+    // THEN: Initialize customization after a brief delay
+    setTimeout(initializeCustomization, 100);
+});

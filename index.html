@@ -5,6 +5,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mock Exam Taker</title>
     <link rel="stylesheet" href="style.css">
+    <style>
+        /* Force modal to be hidden on page load */
+        #customizeModal {
+            display: none !important;
+            opacity: 0 !important;
+            visibility: hidden !important;
+        }
+        
+        #customizeModal.show {
+            display: flex !important;
+            opacity: 1 !important;
+            visibility: visible !important;
+        }
+    </style>
 </head>
 <body>
     <div class="container">
