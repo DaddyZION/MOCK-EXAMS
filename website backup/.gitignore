@@ -1,0 +1,20 @@
+# Server files (not needed for GitHub Pages)
+server.py
+start_server.ps1
+start_server.bat
+generate_exam_data.py
+
+# Development files
+.DS_Store
+Thumbs.db
+*.log
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Temporary files
+*~
+*.tmp

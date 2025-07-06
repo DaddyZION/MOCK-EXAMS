@@ -8,11 +8,8 @@ A Matrix-themed interactive mock exam website that works perfectly with GitHub P
 - **16 embedded mock exams** covering various subjects
 - **Interactive quiz interface** with instant feedback
 - **File upload** for custom markdown exams
-- **📋 Template copy button** - Copy exam creation template to clipboard
-- **🎨 Color customization** - Change the Matrix green to any color you want
 - **GitHub Pages compatible** - no server required!
 - **Responsive design** that works on all devices
-- **💾 Settings persistence** - Your color choices are saved locally
 
 ## 📚 Available Exams
 
@@ -130,23 +127,5 @@ Explanation for question 2
 2. **Check exam format** if you're creating custom exams
 3. **Read explanations** after each question to learn
 4. **Try different subjects** to test various knowledge areas
-
-## 🎨 Customization
-
-### Creating Your Own Exams
-1. **Click the "📋 Copy Template to Clipboard" button** on the main page
-2. **Paste the template** into ChatGPT, Claude, or your preferred AI assistant
-3. **Replace `[Your Topic Here]`** with your desired subject (e.g., "Biology", "Math", "History")
-4. **Generate the exam** and copy the result
-5. **Upload the .md file** using the file upload section
-
-### Color Themes
-- **Click the 🎨 button** in the bottom-right corner
-- **Choose from presets**: Matrix Green, Cyan, Magenta, Yellow, Orange, Red
-- **Custom colors**: Use the color picker and hue slider for unlimited combinations
-- **Settings are saved** automatically and persist between sessions
-
-### Styling
-Modify `style.css` to change the visual appearance.
 
 Enjoy your mock exams! 🎓

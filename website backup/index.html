@@ -57,19 +57,6 @@
                 <h3>Upload Your Own Exam:</h3>
                 <input type="file" id="examFile" accept=".md">
             </div>
-            
-            <!-- New: Create Your Own Exam -->
-            <div id="createExamSection">
-                <h3>🎯 Create Your Own Exam:</h3>
-                <div class="create-exam-box">
-                    <p>Use this template to create custom mock exams with AI:</p>
-                    <button id="copyTemplateBtn" class="copy-btn">📋 Copy Template to Clipboard</button>
-                    <p class="template-notice">
-                        <strong>Instructions:</strong> Copy the template above, paste it into ChatGPT or Claude, 
-                        replace <code>[Your Topic Here]</code> with your subject, and generate your custom exam!
-                    </p>
-                </div>
-            </div>
         </div>
 
         <div id="examArea" class="hidden">
@@ -86,44 +73,6 @@
             <h2>Exam Complete!</h2>
             <p>Your score: <span id="score"></span></p>
             <button id="restartBtn">Take Another Exam</button>
-        </div>
-    </div>
-
-    <!-- Customization Button -->
-    <button id="customizeBtn" class="customize-btn" title="Customize Colors">🎨</button>
-    
-    <!-- Customization Modal -->
-    <div id="customizeModal" class="modal hidden">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>🎨 Customize Colors</h3>
-                <button id="closeModal" class="close-btn">&times;</button>
-            </div>
-            <div class="modal-body">
-                <div class="color-option">
-                    <label for="accentColor">Accent Color:</label>
-                    <input type="color" id="accentColor" value="#00ff00">
-                    <span class="color-preview" id="accentPreview"></span>
-                </div>
-                <div class="color-option">
-                    <label for="backgroundHue">Background Hue:</label>
-                    <input type="range" id="backgroundHue" min="0" max="360" value="120">
-                    <span class="color-preview" id="backgroundPreview"></span>
-                </div>
-                <div class="preset-colors">
-                    <h4>Quick Presets:</h4>
-                    <button class="preset-btn" data-color="#00ff00" data-hue="120">🟢 Matrix Green</button>
-                    <button class="preset-btn" data-color="#00ffff" data-hue="180">🔵 Cyan</button>
-                    <button class="preset-btn" data-color="#ff0080" data-hue="320">🟣 Magenta</button>
-                    <button class="preset-btn" data-color="#ffff00" data-hue="60">🟡 Yellow</button>
-                    <button class="preset-btn" data-color="#ff8000" data-hue="30">🟠 Orange</button>
-                    <button class="preset-btn" data-color="#ff0000" data-hue="0">🔴 Red</button>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button id="resetColors">Reset to Default</button>
-                <button id="applyColors">Apply Changes</button>
-            </div>
         </div>
     </div>
 
