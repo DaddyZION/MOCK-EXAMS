@@ -109,9 +109,41 @@ h1 {
     animation: text-glow 2s ease-in-out infinite alternate;
 }
 
-@keyframes text-glow {
-    0% { text-shadow: 0 0 10px #ffffff, 0 0 20px #ffffff, 0 0 40px rgba(255, 255, 255, 0.5); }
-    100% { text-shadow: 0 0 15px #ffffff, 0 0 25px #ffffff, 0 0 50px rgba(255, 255, 255, 0.8); }
+/* Instructions section */
+#instructions {
+    margin-bottom: 2rem;
+    text-align: center;
+}
+
+#instructions h3 {
+    color: #00ff41;
+    margin-bottom: 1rem;
+    font-size: 1.2rem;
+    text-shadow: 0 0 10px rgba(0, 255, 65, 0.5);
+}
+
+.instruction-box {
+    background: rgba(0, 50, 0, 0.6);
+    border: 1px solid rgba(0, 255, 65, 0.3);
+    border-radius: 8px;
+    padding: 1rem;
+    margin: 0 auto;
+    max-width: 600px;
+    box-shadow: 0 0 15px rgba(0, 255, 65, 0.2);
+}
+
+.instruction-box p {
+    margin: 0.5rem 0;
+    font-size: 0.9rem;
+}
+
+.instruction-box code {
+    background: rgba(0, 255, 65, 0.1);
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-family: 'Fira Code', monospace;
+    color: #00ff41;
+    border: 1px solid rgba(0, 255, 65, 0.3);
 }
 
 h2 {

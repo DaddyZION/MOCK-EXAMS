@@ -40,10 +40,60 @@ examFile.addEventListener('change', (event) => {
 });
 
 // Event listener for generated exam selection
-loadGeneratedExamBtn.addEventListener('click', () => {
+loadGeneratedExamBtn.addEventListener('click', async () => {
     const selectedExam = generatedExamSelect.value;
     if (!selectedExam) {
         alert('Please select an exam from the dropdown.');
+        return;
+    }
+    
+    try {
+        // Show loading indicator
+        loadGeneratedExamBtn.textContent = 'Loading...';
+        loadGeneratedExamBtn.disabled = true;
+        
+        // Try to fetch the exam file directly (works when served via HTTP server)
+        const response = await fetch(`exams/${selectedExam}`);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const content = await response.text();
+        [questions, answers] = parseMarkdown(content);
+        
+        if (questions.length > 0) {
+            initialView.classList.add('hidden');
+            examArea.classList.remove('hidden');
+            startExam();
+        } else {
+            alert('Failed to parse the exam file. Please check the format.');
+        }
+        
+    } catch (error) {
+        console.error('Error loading exam:', error);
+        
+        // Fallback to file selection dialog if direct fetch fails
+        // This happens when opening the HTML file directly instead of through a server
+        showFileSelectionFallback(selectedExam);
+    } finally {
+        // Restore button state
+        loadGeneratedExamBtn.textContent = 'Load Selected Exam';
+        loadGeneratedExamBtn.disabled = false;
+    }
+});
+
+// Fallback function for when direct file fetch fails
+function showFileSelectionFallback(selectedExam) {
+    const useServer = confirm(
+        `❌ Cannot load exam directly. This happens when opening the HTML file directly.\n\n` +
+        `✅ For the best experience, use the server:\n` +
+        `   1. Run "start_server.bat" in the website folder\n` +
+        `   2. The server will open your browser automatically\n\n` +
+        `⚠️ Or click OK to manually select the file now.`
+    );
+    
+    if (useServer) {
         return;
     }
     
@@ -78,7 +128,7 @@ loadGeneratedExamBtn.addEventListener('click', () => {
     // Show message and trigger file selection
     alert(`Please select the ${selectedExam} file from the exams folder when the file dialog opens.`);
     fileInput.click();
-});
+}
 
 function startExam() {
     currentQuestionIndex = 0;
