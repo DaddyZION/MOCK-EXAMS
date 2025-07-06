@@ -1,13 +1,46 @@
-# Mock Exam Taker
+# Matrix Mock Exam Website
 
-A Matrix-themed mock exam website that allows you to take interactive exams with instant feedback.
+A Matrix-themed interactive mock exam website that works perfectly with GitHub Pages!
 
-## 🚀 Quick Start
+## 🚀 Features
 
-### Method 1: Using the HTTP Server (Recommended)
-1. **Double-click `start_server.bat`** - This will:
-   - Start a local HTTP server
-   - Open your browser automatically
+- **Matrix-themed UI** with animated background and glowing effects
+- **16 embedded mock exams** covering various subjects
+- **Interactive quiz interface** with instant feedback
+- **File upload** for custom markdown exams
+- **GitHub Pages compatible** - no server required!
+- **Responsive design** that works on all devices
+
+## 📚 Available Exams
+
+The website includes pre-built exams for:
+- Anthropology, Art History, Astronomy, Chemistry
+- Computer Science, Economics, Environmental Science
+- Geography, History, Linguistics, Literature
+- Music Theory, Philosophy, Physics, Psychology, Sociology
+
+## 🌐 Deploy to GitHub Pages
+
+### Option 1: Quick Deploy (Recommended)
+1. Fork this repository
+2. Go to repository Settings → Pages
+3. Set Source to "Deploy from a branch"
+4. Select `main` branch and `/ (root)` folder
+5. Click Save - your site will be live at `https://yourusername.github.io/repository-name`
+
+### Option 2: Manual Setup
+1. Create a new GitHub repository
+2. Upload all files from the `website` folder to the root of your repository
+3. Enable GitHub Pages in repository settings
+4. Your site will be available at `https://yourusername.github.io/repository-name`
+
+## 💻 Local Development
+
+### Run Locally (Simple)
+Just open `index.html` in any modern web browser - it works directly!
+
+### Run with Local Server (Optional)
+For development purposes, you can still use the local server:
    - Enable seamless exam loading from the dropdown
 
 2. **Select an exam** from the dropdown and click "Load Selected Exam"

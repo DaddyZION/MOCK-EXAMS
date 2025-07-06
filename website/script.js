@@ -52,14 +52,13 @@ loadGeneratedExamBtn.addEventListener('click', async () => {
         loadGeneratedExamBtn.textContent = 'Loading...';
         loadGeneratedExamBtn.disabled = true;
         
-        // Try to fetch the exam file directly (works when served via HTTP server)
-        const response = await fetch(`exams/${selectedExam}`);
+        // Use embedded exam data for GitHub Pages compatibility
+        const content = getExamContent(selectedExam);
         
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+        if (!content) {
+            throw new Error('Exam content not found');
         }
         
-        const content = await response.text();
         [questions, answers] = parseMarkdown(content);
         
         if (questions.length > 0) {
@@ -72,63 +71,13 @@ loadGeneratedExamBtn.addEventListener('click', async () => {
         
     } catch (error) {
         console.error('Error loading exam:', error);
-        
-        // Fallback to file selection dialog if direct fetch fails
-        // This happens when opening the HTML file directly instead of through a server
-        showFileSelectionFallback(selectedExam);
+        alert('Error loading exam: ' + error.message);
     } finally {
         // Restore button state
         loadGeneratedExamBtn.textContent = 'Load Selected Exam';
         loadGeneratedExamBtn.disabled = false;
     }
 });
-
-// Fallback function for when direct file fetch fails
-function showFileSelectionFallback(selectedExam) {
-    const useServer = confirm(
-        `❌ Cannot load exam directly. This happens when opening the HTML file directly.\n\n` +
-        `✅ For the best experience, use the server:\n` +
-        `   1. Run "start_server.bat" in the website folder\n` +
-        `   2. The server will open your browser automatically\n\n` +
-        `⚠️ Or click OK to manually select the file now.`
-    );
-    
-    if (useServer) {
-        return;
-    }
-    
-    // Create a hidden file input to simulate file selection
-    const fileInput = document.createElement('input');
-    fileInput.type = 'file';
-    fileInput.accept = '.md';
-    fileInput.style.display = 'none';
-    document.body.appendChild(fileInput);
-    
-    // Set up event handler for when file is selected
-    fileInput.addEventListener('change', (event) => {
-        const file = event.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                const content = e.target.result;
-                [questions, answers] = parseMarkdown(content);
-                if (questions.length > 0) {
-                    initialView.classList.add('hidden');
-                    examArea.classList.remove('hidden');
-                    startExam();
-                } else {
-                    alert('Failed to parse the exam file. Please check the format.');
-                }
-                document.body.removeChild(fileInput);
-            };
-            reader.readAsText(file);
-        }
-    });
-    
-    // Show message and trigger file selection
-    alert(`Please select the ${selectedExam} file from the exams folder when the file dialog opens.`);
-    fileInput.click();
-}
 
 function startExam() {
     currentQuestionIndex = 0;
